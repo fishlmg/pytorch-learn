@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
 
-PyTorch 深度学习入门到实践的练习集合，以可运行的 Notebook 和脚本覆盖张量操作、网络搭建、训练循环与模型推理全流程。
+用面积回归这个小例子，把自定义网络、`nn.Sequential`、训练循环和加载权重做推理串起来。训练数据是随机宽高，标签是宽乘高；预测时从图片轮廓里取出宽高。
 
 ## 📖 适合谁
 
@@ -15,25 +15,42 @@ PyTorch 深度学习入门到实践的练习集合，以可运行的 Notebook �
 
 | 文件 | 内容 |
 | --- | --- |
-| `1.py` | PyTorch 基础语法练习（张量、自动求导） |
-| `nn_base.ipynb` | `nn.Module` 自定义网络构建 |
-| `sequential.ipynb` | `nn.Sequential` 快速堆叠网络层 |
-| `train.ipynb` | 完整训练流程（Dataset → DataLoader → 训练循环 → Loss 曲线） |
-| `test.py` | 模型评估 |
-| `infer.py` | 加载权重进行推理 |
+| `nn_base.ipynb` | `nn.Module` 自定义网络的最小模板 |
+| `sequential.ipynb` | 用 `nn.Sequential` 堆一个面积回归网络 |
+| `train.ipynb` | Notebook 里的训练循环（Dataset → DataLoader → Loss） |
+| `train_area.py` | 脚本版训练：随机宽高回归面积，抽查两组尺寸，保存 `model1.pth` |
+| `predict_area.py` | 读图片轮廓的宽高，用 `model1.pth` 预测面积 |
+| `infer.py` | 另一版推理：较浅的两层网络，加载 `model.pth` |
 
 ## 🚀 快速开始
 
 ```bash
 pip install -r requirements.txt
+```
+
+先看 Notebook，按顺序打开：
+
+```bash
 jupyter notebook
 ```
 
-按顺序打开学习：
+1. `nn_base.ipynb` — 网络类怎么写、前向传播从哪走
+2. `sequential.ipynb` — 用 Sequential 把线性层叠起来
+3. `train.ipynb` — 在 Notebook 里把训练循环跑通（只打印 loss，不保存权重）
 
-1. `nn_base.ipynb` — 理解网络层与前向传播
-2. `sequential.ipynb` — 快速搭建网络
-3. `train.ipynb` — 跑通完整训练循环
+再跑脚本。`train_area.py` 不读外部数据，自己造 1000 组宽高，训完在当前目录写出 `model1.pth`，并打印 `(3, 4)`、`(5, 6)` 的预测面积：
+
+```bash
+python train_area.py
+```
+
+`predict_area.py` 加载这份 `model1.pth`。默认读当前目录的 `3.png`（画面里一块形状即可），路径写在脚本的 `image_path`，换成自己的图再运行：
+
+```bash
+python predict_area.py
+```
+
+`infer.py` 是更早的一版，网络只有两层，读的是 `model.pth`。仓库里没有这份权重，也不能拿 `model1.pth` 去替，层数对不上。
 
 ## 📦 依赖
 
@@ -41,7 +58,9 @@ PyTorch、torchvision、NumPy、Matplotlib、OpenCV —— 详见 [requirements.
 
 ## 📝 说明
 
-训练产出的权重文件（`.pth`）与结果图片（`.png`）不包含在仓库中（`.gitignore` 已排除），运行 Notebook 后会自动生成。
+训练产出的权重（`.pth`）和结果图片（`.png`）不入库，见 `.gitignore`。`train.ipynb` 只用来看 loss；要拿到能给 `predict_area.py` 用的权重，跑 `train_area.py`。
+
+图片预测假定最大的那块轮廓就是要测的形状，取它的外接矩形宽高送进网络。
 
 ## 📄 许可证
 
